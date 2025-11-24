@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+**/.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+
+# Temporary files
+*.tmp
+.cache/
+
+# SSL certificates (generated locally with mkcert)
+*.pem
+localhost*.pem
+# Note: Each developer must generate their own certificates with their IP address
+# Run: mkcert localhost YOUR-IP 127.0.0.1 ::1
+
+# Server uploads (videos) - keep directory structure but ignore video files
+server/uploads/*.webm
+server/uploads/*.mp4
+server/uploads/*.mov

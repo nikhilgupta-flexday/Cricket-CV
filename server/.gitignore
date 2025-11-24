@@ -1,0 +1,8 @@
+# Server dependencies
+node_modules/
+
+# Uploaded videos
+uploads/
+
+# Logs
+*.log
