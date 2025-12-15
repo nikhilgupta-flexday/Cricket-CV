@@ -10,7 +10,7 @@ build/
 .env
 .env.local
 .env.production
-
+.venv/
 # Editor directories
 .vscode/
 .idea/
@@ -46,3 +46,6 @@ localhost*.pem
 server/uploads/*.webm
 server/uploads/*.mp4
 server/uploads/*.mov
+
+# Don't upload heavy images
+/scripts/image_results/
