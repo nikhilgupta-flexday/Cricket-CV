@@ -2,15 +2,16 @@ import cv2
 import time, os
 from ultralytics import YOLO
 from datetime import datetime
+from inferences import check_violation_simple, check_violation_perspective
 
-model = YOLO('best_cricket.pt') # example model
+model = YOLO('cricket2.0.pt') # example model
 save_folder = 'saved'
 os.makedirs(save_folder, exist_ok=True)
 
 def run_inference(frame):
     results = model(frame)
     
-    line_box = None
+    line_box, line_confidence = None, -1.0
     shoe_boxes = []
     
     for box in results[0].boxes:
@@ -19,8 +20,9 @@ def run_inference(frame):
         confidence = box.conf[0].item()
         class_name = model.names[class_id]
         
-        if class_name == 'line':
+        if class_name == 'line' and confidence > line_confidence:
             line_box = coords
+            line_confidence = confidence
         elif class_name == 'shoe':
             shoe_boxes.append(coords)
     
@@ -30,37 +32,12 @@ def run_inference(frame):
     
     # Check each shoe
     for shoe in shoe_boxes:
-        violation, confidence = check_line_violation(shoe, line_box)
+        violation, confidence = check_violation_simple(shoe, line_box)
+        #violation, confidence = check_violation_perspective(frame, shoe, line_box)
         if violation:
             return results, True, confidence
     
     return results, False, None
-
-# given coordinates of the shoe and the line, can we calculate a confidence that they are touching?
-def check_line_violation(shoe_box, line_box, buffer_percent=0.05):
-    shoe_x1, shoe_y1, shoe_x2, shoe_y2 = shoe_box
-    line_x1, line_y1, line_x2, line_y2 = line_box
-    
-    line_center_x = (line_x1 + line_x2) / 2
-    shoe_width = shoe_x2 - shoe_x1
-    
-    # Add buffer to edges in case of close calls
-    buffer = shoe_width * buffer_percent
-    effective_shoe_x1 = shoe_x1 + buffer
-    effective_shoe_x2 = shoe_x2 - buffer
-    
-    if effective_shoe_x1 < line_center_x < effective_shoe_x2:
-        # Calculate confidence
-        dist_from_left = line_center_x - effective_shoe_x1
-        dist_from_right = effective_shoe_x2 - line_center_x
-        effective_width = effective_shoe_x2 - effective_shoe_x1
-        
-        min_dist = min(dist_from_left, dist_from_right)
-        confidence = min_dist / (effective_width / 2)
-        
-        return True, confidence
-    
-    return False, 0.0
 
 def find_cam():
     for i in range(10):
@@ -128,6 +105,8 @@ def main():
         
         # Handle quit and save
         key = cv2.waitKey(1) & 0xFF
+        if key != 255: 
+            print(f"Key pressed: {key} ('{chr(key) if key < 128 else '?'}')")
         if key == ord('q'):
             break
         elif key == ord('s'):
